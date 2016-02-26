@@ -9,3 +9,9 @@ How-to get Xiaomi Yi Camera IP address to send commands to it through sockets
  - parse output with python to only get Xiaomi IP address.
  - do magic!
 '''
+
+def main():
+    print("Hello world!")
+
+if __name__ == '__main__':
+    main()
