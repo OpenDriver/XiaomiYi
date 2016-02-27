@@ -24,6 +24,7 @@ def SocketConnection(xiaomiIP):
     server.connect((XIAOMI_IP, XIAOMI_PORT))
 
     server.send('{"msg_id":257,"token":0}')
+    
     data = server.recv(512)
 
     if "rval"in data:
