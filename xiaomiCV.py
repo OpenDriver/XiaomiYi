@@ -11,21 +11,40 @@ How-to get Xiaomi Yi Camera IP address to send commands to it through sockets
 '''
 
 import subprocess
+import os, re, sys, time, socket
 
 INTERFACE = "en1"
 PASSWORD = "1234567890"
 
-def GetXiaomiIP():
-    var = None
-    ifconfig = subprocess.Popen(['ifconfig'], stdout = subprocess.PIPE,)
-    grep = subprocess.Popen(['grep', '.. 192.168.42'], stdin = ifconfig.stdout, stdout = subprocess.PIPE,)
+XIAOMI_IP = "192.168.42.1"
+XIAOMI_PORT = 7878
 
-    end_of_pipe = grep.stdout
-    for line in end_of_pipe:
-        var = line.strip()
+def SocketConnection(xiaomiIP):
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((XIAOMI_IP, XIAOMI_PORT))
 
-    ipAddress = var.split()
-    return ipAddress[1]
+    server.send('{"msg_id":257,"token":0}')
+    data = server.recv(512)
+
+    if "rval"in data:
+        token = re.findall('"param": (.+) }',data)[0]
+    else:
+        data = server.recv(512)
+        if "rval"in data:
+            token = re.findall('"param": (.+) }',data)[0]
+
+    tosend = '{"msg_id":259,"token":%s,"param":"none_force"}' %token
+    server.send(tosend)
+    server.recv(512)
+
+    print "Live webcam stream is now available."
+    print 'Run VLC, select "Media"->"Open network stream" and open'
+    print 'rtsp://%s/live' %xiaomiIP
+    print
+    print "Press CTRL+C to end this streamer"
+
+    while 1:
+	       time.sleep(1)
 
 def Connect2Xiaomi(INTERFACE, SSID, PASSWORD):
     program = "networksetup"
@@ -52,8 +71,8 @@ def NetworkScan():
         var = line.strip()
 
     if var == None:
-        print '\t I cannot find your Xiaomi Yi, is it turned on?'
-        print '\t Please take a look and run the code again :-)'
+        print '\tI cannot find your Xiaomi Yi, is it turned on?'
+        print '\tPlease take a look and run the code again :-)'
         return var
     else:
         xiaomiSSID = var.split()
@@ -64,9 +83,8 @@ def main():
     SSID = NetworkScan()
     #Connect to your Xiaomi Yi
     if SSID != None:
-        connection = Connect2Xiaomi(INTERFACE, SSID, PASSWORD)
-        # Get Xiaomi Yi's IP Address
-        xiaomiIP = GetXiaomiIP()
+        Connect2Xiaomi(INTERFACE, SSID, PASSWORD)
+        SocketConnection()
 
 
 if __name__ == '__main__':
