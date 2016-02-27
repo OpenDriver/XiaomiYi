@@ -16,7 +16,16 @@ INTERFACE = "en1"
 PASSWORD = "1234567890"
 
 def GetXiaomiIP():
-    print 'Holder...'
+    var = None
+    ifconfig = subprocess.Popen(['ifconfig'], stdout = subprocess.PIPE,)
+    grep = subprocess.Popen(['grep', '.. 192.168.42'], stdin = ifconfig.stdout, stdout = subprocess.PIPE,)
+
+    end_of_pipe = grep.stdout
+    for line in end_of_pipe:
+        var = line.strip()
+
+    ipAddress = var.split()
+    return ipAddress[1]
 
 def Connect2Xiaomi(INTERFACE, SSID, PASSWORD):
     program = "networksetup"
@@ -26,8 +35,10 @@ def Connect2Xiaomi(INTERFACE, SSID, PASSWORD):
     command.extend(argList)
 
     output = str(subprocess.Popen(command, stdout = subprocess.PIPE).communicate()[0])
-
-    print 'You are now connected to your Xiaomi Yi!'
+    if output != None:
+        print '\tYou are now connected to your Xiaomi Yi!'
+    else:
+        print '\tSorry, there was a problem :-('
 
 def NetworkScan():
     var = None
@@ -55,7 +66,7 @@ def main():
     if SSID != None:
         connection = Connect2Xiaomi(INTERFACE, SSID, PASSWORD)
         # Get Xiaomi Yi's IP Address
-        GetXiaomiIP()
+        xiaomiIP = GetXiaomiIP()
 
 
 if __name__ == '__main__':
