@@ -1,2 +1,2 @@
 # XiaomiYi
-Accessing to Xiaomi Yi Stream.
+Accessing to Xiaomi Yi Stream using OpenCV.
